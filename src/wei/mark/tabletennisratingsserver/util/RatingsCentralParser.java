@@ -3,8 +3,8 @@ package wei.mark.tabletennisratingsserver.util;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import javax.persistence.EntityManager;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -12,23 +12,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
+import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
 public class RatingsCentralParser implements ProviderParser {
 	private static RatingsCentralParser mParser;
-
-	private Map<String, ArrayList<PlayerModel>> mCache;
+	private static final String provider = "rc";
 
 	private RatingsCentralParser() {
-		mCache = new LinkedHashMap<String, ArrayList<PlayerModel>>(MAX_CACHE,
-				.75f, true) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected boolean removeEldestEntry(
-					java.util.Map.Entry<String, ArrayList<PlayerModel>> eldest) {
-				return size() > MAX_CACHE;
-			}
-		};
 	}
 
 	public static synchronized RatingsCentralParser getParser() {
@@ -38,24 +28,22 @@ public class RatingsCentralParser implements ProviderParser {
 	}
 
 	@Override
-	public ArrayList<PlayerModel> playerNameSearch(String query) {
-		return lastFirstNamePlayerSearch(query, false);
-	}
-
-	public ArrayList<PlayerModel> lastFirstNamePlayerSearch(
-			String lastAndFirstName, boolean fresh) {
+	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
 		ArrayList<PlayerModel> players;
-		if (!fresh) {
-			// first check cache
-			players = mCache.get(lastAndFirstName);
-			if (players != null)
-				return players;
-		}
 
+		EntityManager em = EMF.get().createEntityManager();
 		try {
+			if (!fresh) {
+				// first check cache
+				Object cache = em.find(PlayerModelCache.class,
+						PlayerModelCache.calculateKey(provider, query));
+				if (cache != null)
+					return ((PlayerModelCache) cache).getPlayers();
+			}
+
 			URL url = new URL(
 					"http://www.ratingscentral.com/PlayerList.php?SortOrder=Name&PlayerName="
-							+ URLEncoder.encode(lastAndFirstName, "UTF-8"));
+							+ URLEncoder.encode(query, "UTF-8"));
 
 			Document doc = Jsoup.connect(url.toString()).get();
 
@@ -67,10 +55,10 @@ public class RatingsCentralParser implements ProviderParser {
 
 				PlayerModel player = new PlayerModel();
 
-				player.mProvider = "rc";
-				player.mRating = row.get(0).text().trim();
-				player.mName = row.get(1).text().trim();
-				player.mId = row.get(2).text().trim();
+				player.setProvider(provider);
+				player.setRating(row.get(0).text().trim());
+				player.setName(row.get(1).text().trim());
+				player.setId(row.get(2).text().trim());
 				Elements clubElements = row.get(3).children();
 				ArrayList<String> clubs = new ArrayList<String>();
 				for (Element clubElement : clubElements) {
@@ -78,17 +66,44 @@ public class RatingsCentralParser implements ProviderParser {
 					if (club != null && !club.equals(""))
 						clubs.add(club);
 				}
-				player.mClubs = clubs.toArray(new String[0]);
-				player.mState = row.get(4).text().trim();
-				player.mCountry = row.get(5).text().trim();
-				player.mLastPlayed = row.get(6).text().trim();
+				player.setClubs(clubs.toArray(new String[0]));
+				player.setState(row.get(4).text().trim());
+				player.setCountry(row.get(5).text().trim());
+				player.setLastPlayed(row.get(6).text().trim());
 				players.add(player);
 			}
 
-			mCache.put(lastAndFirstName, players);
+			PlayerModelCache cache = new PlayerModelCache(provider, query,
+					players);
+
+			Object oldCache = em.find(PlayerModelCache.class,
+					PlayerModelCache.calculateKey(provider, query));
+			if (oldCache != null) {
+				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) oldCache)
+						.getPlayers();
+				for (PlayerModel playerModel : cachedPlayers) {
+					em.remove(playerModel);
+				}
+				em.remove(oldCache);
+			}
+
+			em.persist(cache);
+
 			return players;
 		} catch (Exception ex) {
-			return mCache.get(lastAndFirstName);
+			Object cache = em.find(
+					PlayerModelCache.class,
+					PlayerModelCache.calculateKey(provider,
+							PlayerModelCache.calculateKey(provider, query)));
+			if (cache != null) {
+				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) cache)
+						.getPlayers();
+				return cachedPlayers;
+			} else {
+				return null;
+			}
+		} finally {
+			em.close();
 		}
 	}
 }

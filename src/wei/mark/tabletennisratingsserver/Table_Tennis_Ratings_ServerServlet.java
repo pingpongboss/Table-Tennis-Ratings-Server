@@ -3,6 +3,7 @@ package wei.mark.tabletennisratingsserver;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,27 +15,40 @@ import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 
 @SuppressWarnings("serial")
 public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
-		String id = req.getParameter("id");
-		String provider = req.getParameter("provider");
-		String query = req.getParameter("query");
-
 		String response = null;
+		try {
+			String id = req.getParameter("id").trim();
+			String provider = req.getParameter("provider").trim();
+			String query = req.getParameter("query").trim();
+			boolean fresh = Boolean.parseBoolean(req.getParameter("fresh"));
 
-		if (query != null && !query.equals("") && verify(id)) {
-			ArrayList<PlayerModel> players = new ArrayList<PlayerModel>();
+			if (query != null && !query.equals("") && verify(id)) {
+				ArrayList<PlayerModel> players = new ArrayList<PlayerModel>();
 
-			players = getProviderParser(provider).playerNameSearch(query);
+				ProviderParser parser = getProviderParser(provider);
+				if (parser != null)
+					players = parser.playerNameSearch(query, fresh);
 
-			Gson gson = new Gson();
-			Type type = new TypeToken<ArrayList<PlayerModel>>() {
-			}.getType();
-			response = gson.toJson(players, type);
+				GsonBuilder builder = new GsonBuilder();
+				builder.registerTypeAdapter(BitSet.class,
+						new BitSetSerializer());
+				Gson gson = builder.create();
+				Type type = new TypeToken<ArrayList<PlayerModel>>() {
+				}.getType();
+				response = gson.toJson(players, type);
+			}
+		} catch (Exception ex) {
+			log(ex.getMessage());
 		}
 
 		resp.setContentType("text/plain");
@@ -53,4 +67,15 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	private boolean verify(String id) {
 		return id != null && !id.equals("");
 	}
+
+	private class BitSetSerializer implements JsonSerializer<BitSet> {
+
+		@Override
+		public JsonElement serialize(BitSet src, Type arg1,
+				JsonSerializationContext arg2) {
+			return null;
+		}
+
+	}
+
 }

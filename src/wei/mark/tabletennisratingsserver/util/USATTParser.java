@@ -3,31 +3,21 @@ package wei.mark.tabletennisratingsserver.util;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+
+import javax.persistence.EntityManager;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
+import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
 public class USATTParser implements ProviderParser {
 	private static USATTParser mParser;
-
-	private Map<String, ArrayList<PlayerModel>> mCache;
+	private static final String provider = "usatt";
 
 	private USATTParser() {
-		mCache = new LinkedHashMap<String, ArrayList<PlayerModel>>(MAX_CACHE,
-				.75f, true) {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			protected boolean removeEldestEntry(
-					java.util.Map.Entry<String, ArrayList<PlayerModel>> eldest) {
-				return size() > MAX_CACHE;
-			}
-		};
 	}
 
 	public static synchronized USATTParser getParser() {
@@ -37,25 +27,25 @@ public class USATTParser implements ProviderParser {
 	}
 
 	@Override
-	public ArrayList<PlayerModel> playerNameSearch(String query) {
-		return playerNameSearch(query, false);
-	}
+	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
+		ArrayList<PlayerModel> players = null;
 
-	public ArrayList<PlayerModel> playerNameSearch(String lastName,
-			boolean fresh) {
-		ArrayList<PlayerModel> players;
-
-		if (!fresh) {
-			// first check cache
-			players = mCache.get(lastName);
-			if (players != null)
-				return players;
-		}
-
+		EntityManager em = EMF.get().createEntityManager();
 		try {
+			if (!fresh) {
+				// first check cache
+				Object cache = em.find(PlayerModelCache.class,
+						PlayerModelCache.calculateKey(provider, query));
+				if (cache != null) {
+					ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) cache)
+							.getPlayers();
+					return cachedPlayers;
+				}
+			}
+
 			URL url = new URL(
 					"http://www.usatt.org/history/rating/history/Allplayers.asp?NSearch="
-							+ URLEncoder.encode(lastName, "UTF-8"));
+							+ URLEncoder.encode(query, "UTF-8"));
 
 			Document doc = Jsoup.connect(url.toString()).get();
 
@@ -68,21 +58,46 @@ public class USATTParser implements ProviderParser {
 
 				PlayerModel player = new PlayerModel();
 
-				player.mProvider = "usatt";
-				player.mId = row.get(0).text().trim();
-				player.mExpires = row.get(1).text().trim();
-				player.mName = row.get(2).text().trim();
-				player.mRating = row.get(3).text().trim();
-				player.mState = row.get(4).text().trim();
-				player.mLastPlayed = row.get(5).text().trim();
+				player.setProvider(provider);
+				player.setId(row.get(0).text().trim());
+				player.setExpires(row.get(1).text().trim());
+				player.setName(row.get(2).text().trim());
+				player.setRating(row.get(3).text().trim());
+				player.setState(row.get(4).text().trim());
+				player.setLastPlayed(row.get(5).text().trim());
 				players.add(player);
 
 			}
 
-			mCache.put(lastName, players);
+			PlayerModelCache cache = new PlayerModelCache(provider, query,
+					players);
+
+			Object oldCache = em.find(PlayerModelCache.class,
+					PlayerModelCache.calculateKey(provider, query));
+			if (oldCache != null) {
+				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) oldCache)
+						.getPlayers();
+				for (PlayerModel playerModel : cachedPlayers) {
+					em.remove(playerModel);
+				}
+				em.remove(oldCache);
+			}
+
+			em.persist(cache);
+
 			return players;
 		} catch (Exception ex) {
-			return mCache.get(lastName);
+			Object cache = em.find(PlayerModelCache.class,
+					PlayerModelCache.calculateKey(provider, query));
+			if (cache != null) {
+				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) cache)
+						.getPlayers();
+				return cachedPlayers;
+			} else {
+				return null;
+			}
+		} finally {
+			em.close();
 		}
 	}
 }
