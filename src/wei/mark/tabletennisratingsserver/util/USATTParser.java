@@ -28,7 +28,9 @@ public class USATTParser implements ProviderParser {
 
 	@Override
 	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
-		ArrayList<PlayerModel> players = null;
+		ArrayList<PlayerModel> players;
+		String firstName = getFirstName(query);
+		String lastName = getLastName(query);
 
 		EntityManager em = EMF.get().createEntityManager();
 		try {
@@ -45,7 +47,7 @@ public class USATTParser implements ProviderParser {
 
 			URL url = new URL(
 					"http://www.usatt.org/history/rating/history/Allplayers.asp?NSearch="
-							+ URLEncoder.encode(query, "UTF-8"));
+							+ URLEncoder.encode(lastName, "UTF-8"));
 
 			Document doc = Jsoup.connect(url.toString()).get();
 
@@ -56,20 +58,25 @@ public class USATTParser implements ProviderParser {
 			for (int i = 1; i < rows.size(); i++) {
 				Elements row = rows.get(i).children();
 
-				PlayerModel player = new PlayerModel();
+				String playerName = row.get(2).text().trim();
+				// match last name && first name
+				if (lastName.equalsIgnoreCase(getLastName(playerName))
+						&& (firstName.equals("") || firstName
+								.equalsIgnoreCase(getFirstName(playerName)))) {
+					PlayerModel player = new PlayerModel();
 
-				player.setProvider(provider);
-				player.setId(row.get(0).text().trim());
-				player.setExpires(row.get(1).text().trim());
-				player.setName(row.get(2).text().trim());
-				player.setRating(row.get(3).text().trim());
-				player.setState(row.get(4).text().trim());
-				player.setLastPlayed(row.get(5).text().trim());
-				players.add(player);
-
+					player.setProvider(provider);
+					player.setId(row.get(0).text().trim());
+					player.setExpires(row.get(1).text().trim());
+					player.setName(playerName);
+					player.setRating(row.get(3).text().trim());
+					player.setState(row.get(4).text().trim());
+					player.setLastPlayed(row.get(5).text().trim());
+					players.add(player);
+				}
 			}
 
-			PlayerModelCache cache = new PlayerModelCache(provider, query,
+			PlayerModelCache cache = new PlayerModelCache(provider, lastName,
 					players);
 
 			Object oldCache = em.find(PlayerModelCache.class,
@@ -99,5 +106,21 @@ public class USATTParser implements ProviderParser {
 		} finally {
 			em.close();
 		}
+	}
+
+	private String getFirstName(String fullName) {
+		int commaIndex = fullName.indexOf(",");
+		if (commaIndex != -1)
+			return fullName.substring(commaIndex).trim();
+		else
+			return "";
+	}
+
+	private String getLastName(String fullName) {
+		int commaIndex = fullName.indexOf(",");
+		if (commaIndex != -1)
+			return fullName.substring(0, commaIndex).trim();
+		else
+			return fullName;
 	}
 }

@@ -25,7 +25,7 @@ public class PlayerModelCache {
 	}
 
 	public static String calculateKey(String provider, String query) {
-		return provider + "_" + query;
+		return provider.toLowerCase() + "_" + query.toLowerCase();
 	}
 
 	public String getKey() {

@@ -30,6 +30,8 @@ public class RatingsCentralParser implements ProviderParser {
 	@Override
 	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
 		ArrayList<PlayerModel> players;
+		String firstName = getFirstName(query);
+		String lastName = getLastName(query);
 
 		EntityManager em = EMF.get().createEntityManager();
 		try {
@@ -53,24 +55,30 @@ public class RatingsCentralParser implements ProviderParser {
 			for (int i = 0; i < rows.size(); i++) {
 				Elements row = rows.get(i).children();
 
-				PlayerModel player = new PlayerModel();
+				String playerName = row.get(1).text().trim();
+				// match last name && first name
+				if (lastName.equalsIgnoreCase(getLastName(playerName))
+						&& (firstName.equals("") || firstName
+								.equalsIgnoreCase(getFirstName(playerName)))) {
+					PlayerModel player = new PlayerModel();
 
-				player.setProvider(provider);
-				player.setRating(row.get(0).text().trim());
-				player.setName(row.get(1).text().trim());
-				player.setId(row.get(2).text().trim());
-				Elements clubElements = row.get(3).children();
-				ArrayList<String> clubs = new ArrayList<String>();
-				for (Element clubElement : clubElements) {
-					String club = clubElement.text().trim();
-					if (club != null && !club.equals(""))
-						clubs.add(club);
+					player.setProvider(provider);
+					player.setRating(row.get(0).text().trim());
+					player.setName(playerName);
+					player.setId(row.get(2).text().trim());
+					Elements clubElements = row.get(3).children();
+					ArrayList<String> clubs = new ArrayList<String>();
+					for (Element clubElement : clubElements) {
+						String club = clubElement.text().trim();
+						if (club != null && !club.equals(""))
+							clubs.add(club);
+					}
+					player.setClubs(clubs.toArray(new String[0]));
+					player.setState(row.get(4).text().trim());
+					player.setCountry(row.get(5).text().trim());
+					player.setLastPlayed(row.get(6).text().trim());
+					players.add(player);
 				}
-				player.setClubs(clubs.toArray(new String[0]));
-				player.setState(row.get(4).text().trim());
-				player.setCountry(row.get(5).text().trim());
-				player.setLastPlayed(row.get(6).text().trim());
-				players.add(player);
 			}
 
 			PlayerModelCache cache = new PlayerModelCache(provider, query,
@@ -105,5 +113,21 @@ public class RatingsCentralParser implements ProviderParser {
 		} finally {
 			em.close();
 		}
+	}
+
+	private String getFirstName(String fullName) {
+		int commaIndex = fullName.indexOf(",");
+		if (commaIndex != -1)
+			return fullName.substring(commaIndex).trim();
+		else
+			return "";
+	}
+
+	private String getLastName(String fullName) {
+		int commaIndex = fullName.indexOf(",");
+		if (commaIndex != -1)
+			return fullName.substring(0, commaIndex).trim();
+		else
+			return fullName;
 	}
 }
