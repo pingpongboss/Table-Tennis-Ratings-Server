@@ -1,1 +1,4 @@
-.DS_Store
+syntax: glob
+
+*.DS_Store
+war/WEB-INF/classes
