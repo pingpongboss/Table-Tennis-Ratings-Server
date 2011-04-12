@@ -55,6 +55,9 @@ public class RatingsCentralParser implements ProviderParser {
 			for (int i = 0; i < rows.size(); i++) {
 				Elements row = rows.get(i).children();
 
+				if (row.size() <= 1)
+					continue;
+
 				String playerName = row.get(1).text().trim();
 				// match last name && first name
 				if (lastName.equalsIgnoreCase(getLastName(playerName))
