@@ -111,7 +111,7 @@ public class USATTParser implements ProviderParser {
 	private String getFirstName(String fullName) {
 		int commaIndex = fullName.indexOf(",");
 		if (commaIndex != -1)
-			return fullName.substring(commaIndex).trim();
+			return fullName.substring(commaIndex + 1).trim();
 		else
 			return "";
 	}
