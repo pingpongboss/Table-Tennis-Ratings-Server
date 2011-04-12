@@ -76,7 +76,7 @@ public class USATTParser implements ProviderParser {
 				}
 			}
 
-			PlayerModelCache cache = new PlayerModelCache(provider, lastName,
+			PlayerModelCache cache = new PlayerModelCache(provider, query,
 					players);
 
 			Object oldCache = em.find(PlayerModelCache.class,
