@@ -6,11 +6,14 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	version="2.5">
 	<servlet>
 		<servlet-name>Table_Tennis_Ratings_Server</servlet-name>
-		<servlet-class>wei.mark.tabletennisratingsserver.Table_Tennis_Ratings_ServerServlet</servlet-class>
+		<servlet-class>wei.mark.tabletennisratingsserver.Table_Tennis_Ratings_ServerServlet
+		</servlet-class>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
 		<servlet-name>StatusCheck_Server</servlet-name>
-		<servlet-class>wei.mark.tabletennisratingsserver.StatusCheck_ServerServlet</servlet-class>
+		<servlet-class>wei.mark.tabletennisratingsserver.StatusCheck_ServerServlet
+		</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Table_Tennis_Ratings_Server</servlet-name>
