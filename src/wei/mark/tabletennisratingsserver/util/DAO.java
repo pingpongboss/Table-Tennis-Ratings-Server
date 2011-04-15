@@ -23,10 +23,14 @@ public class DAO extends DAOBase {
 		PlayerModelCache cache = ofy().query(PlayerModelCache.class)
 				.filter("provider", provider).filter("query", query).get();
 		if (cache != null) {
-			Collection<PlayerModel> cachedPlayers = ofy().get(
-					cache.getPlayers()).values();
+			Collection<Key<PlayerModel>> players = cache.getPlayers();
+			Collection<PlayerModel> cachedPlayers;
+			if (players != null) {
+				cachedPlayers = ofy().get(players).values();
+				return new ArrayList<PlayerModel>(cachedPlayers);
+			}
 
-			return new ArrayList<PlayerModel>(cachedPlayers);
+			return new ArrayList<PlayerModel>();
 		}
 		return null;
 	}
