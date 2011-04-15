@@ -1,46 +1,71 @@
 package wei.mark.tabletennisratingsserver.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 
-@Entity
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
+
+@Cached
 public class PlayerModelCache {
 	@Id
-	private String key;
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	private ArrayList<PlayerModel> players;
+	Long key;
 
-	public PlayerModelCache() {
+	String provider;
+	String query;
+	Collection<Key<PlayerModel>> players;
+
+	// used by Objectify
+	@SuppressWarnings("unused")
+	private PlayerModelCache() {
+	}
+
+	public PlayerModelCache(String provider, String query) {
+		this(provider, query, new ArrayList<Key<PlayerModel>>());
 	}
 
 	public PlayerModelCache(String provider, String query,
-			ArrayList<PlayerModel> players) {
-		this.key = calculateKey(provider, query);
+			Collection<Key<PlayerModel>> players) {
+		this.provider = provider;
+		this.query = query;
 		this.players = players;
 	}
 
-	public static String calculateKey(String provider, String query) {
-		return provider.toLowerCase() + "_" + query.toLowerCase();
+	public void addPlayer(Long id) {
+		this.players.add(new Key<PlayerModel>(PlayerModel.class, id));
 	}
 
-	public String getKey() {
+	public Long getKey() {
 		return key;
 	}
 
-	public void setKey(String key) {
+	public void setKey(Long key) {
 		this.key = key;
 	}
 
-	public ArrayList<PlayerModel> getPlayers() {
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
+	public Collection<Key<PlayerModel>> getPlayers() {
 		return players;
 	}
 
-	public void setPlayers(ArrayList<PlayerModel> players) {
+	public void setPlayers(Collection<Key<PlayerModel>> players) {
 		this.players = players;
 	}
 }

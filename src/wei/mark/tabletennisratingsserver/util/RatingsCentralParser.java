@@ -3,8 +3,7 @@ package wei.mark.tabletennisratingsserver.util;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-
-import javax.persistence.EntityManager;
+import java.util.Date;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,17 +29,20 @@ public class RatingsCentralParser implements ProviderParser {
 	@Override
 	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
 		ArrayList<PlayerModel> players;
-		String firstName = getFirstName(query);
-		String lastName = getLastName(query);
+		PlayerModelCache cache;
 
-		EntityManager em = EMF.get().createEntityManager();
+		String firstName = Utils.getFirstName(query);
+		String lastName = Utils.getLastName(query);
+
+		DAO dao = new DAO();
+
 		try {
 			if (!fresh) {
 				// first check cache
-				Object cache = em.find(PlayerModelCache.class,
-						PlayerModelCache.calculateKey(provider, query));
-				if (cache != null)
-					return ((PlayerModelCache) cache).getPlayers();
+				ArrayList<PlayerModel> cachedPlayers = dao.getPlayersFromCache(
+						provider, query);
+				if (cachedPlayers != null)
+					return cachedPlayers;
 			}
 
 			URL url = new URL(
@@ -48,9 +50,12 @@ public class RatingsCentralParser implements ProviderParser {
 							+ URLEncoder.encode(query, "UTF-8"));
 
 			Document doc = Jsoup.connect(url.toString()).get();
-
 			Elements rows = doc.select("td[class=ContentSection] tbody > tr");
+
 			players = new ArrayList<PlayerModel>();
+			cache = new PlayerModelCache(provider, query);
+
+			Date now = new Date();
 
 			for (int i = 0; i < rows.size(); i++) {
 				Elements row = rows.get(i).children();
@@ -60,9 +65,10 @@ public class RatingsCentralParser implements ProviderParser {
 
 				String playerName = row.get(1).text().trim();
 				// match last name && first name
-				if (lastName.equalsIgnoreCase(getLastName(playerName))
+				if (lastName.equalsIgnoreCase(Utils.getLastName(playerName))
 						&& (firstName.equals("") || firstName
-								.equalsIgnoreCase(getFirstName(playerName)))) {
+								.equalsIgnoreCase(Utils
+										.getFirstName(playerName)))) {
 					PlayerModel player = new PlayerModel();
 
 					player.setProvider(provider);
@@ -80,57 +86,20 @@ public class RatingsCentralParser implements ProviderParser {
 					player.setState(row.get(4).text().trim());
 					player.setCountry(row.get(5).text().trim());
 					player.setLastPlayed(row.get(6).text().trim());
+					player.setRefreshed(now);
+
 					players.add(player);
 				}
 			}
 
-			PlayerModelCache cache = new PlayerModelCache(provider, query,
-					players);
-
-			Object oldCache = em.find(PlayerModelCache.class,
-					PlayerModelCache.calculateKey(provider, query));
-			if (oldCache != null) {
-				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) oldCache)
-						.getPlayers();
-				for (PlayerModel playerModel : cachedPlayers) {
-					em.remove(playerModel);
-				}
-				em.remove(oldCache);
-			}
-
-			em.persist(cache);
+			// save cache mapping and update players
+			dao.put(cache, players);
 
 			return players;
 		} catch (Exception ex) {
-			Object cache = em.find(
-					PlayerModelCache.class,
-					PlayerModelCache.calculateKey(provider,
-							PlayerModelCache.calculateKey(provider, query)));
-			if (cache != null) {
-				ArrayList<PlayerModel> cachedPlayers = ((PlayerModelCache) cache)
-						.getPlayers();
-				return cachedPlayers;
-			} else {
-				return null;
-			}
-		} finally {
-			em.close();
+			ArrayList<PlayerModel> cachedPlayers = dao.getPlayersFromCache(
+					provider, query);
+			return cachedPlayers;
 		}
-	}
-
-	private String getFirstName(String fullName) {
-		int commaIndex = fullName.indexOf(",");
-		if (commaIndex != -1)
-			return fullName.substring(commaIndex + 1).trim();
-		else
-			return "";
-	}
-
-	private String getLastName(String fullName) {
-		int commaIndex = fullName.indexOf(",");
-		if (commaIndex != -1)
-			return fullName.substring(0, commaIndex).trim();
-		else
-			return fullName;
 	}
 }
