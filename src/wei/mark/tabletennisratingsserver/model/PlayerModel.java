@@ -1,7 +1,7 @@
 package wei.mark.tabletennisratingsserver.model;
 
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Id;
 
@@ -35,7 +35,7 @@ public class PlayerModel {
 	@Unindexed
 	Date refreshed;
 	@Unindexed
-	ArrayList<String> searchHistory;
+	List<String> searchHistory;
 
 	public PlayerModel() {
 	}
@@ -186,11 +186,11 @@ public class PlayerModel {
 		this.refreshed = refreshed;
 	}
 
-	public ArrayList<String> getSearchHistory() {
+	public List<String> getSearchHistory() {
 		return searchHistory;
 	}
 
-	public void setSearchHistory(ArrayList<String> searchHistory) {
+	public void setSearchHistory(List<String> searchHistory) {
 		this.searchHistory = searchHistory;
 	}
 }
