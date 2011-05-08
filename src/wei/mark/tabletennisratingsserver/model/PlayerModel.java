@@ -46,23 +46,38 @@ public class PlayerModel {
 	}
 
 	public String toDetailedString() {
-		String clubsString;
+		return String.format("%s (%s) %s", getName(), getRating(),
+				toSubtextString());
+	}
 
-		if (clubs == null)
-			clubsString = null;
-		else {
-			StringBuilder sb = new StringBuilder();
-			for (String club : clubs) {
-				if (sb.length() != 0)
-					sb.append(", ");
-				sb.append(club);
+	// excluding main info like name and rating
+	public String toSubtextString() {
+		StringBuilder sb = new StringBuilder();
+
+		String lastPlayedString = lastPlayed == null || lastPlayed.equals("") ? "has never played"
+				: String.format("last played on %s", lastPlayed);
+
+		if (provider.equals("usatt")) {
+			sb.append(String.format("from %s and %s", state, lastPlayedString));
+		} else if (provider.equals("rc")) {
+			if (clubs == null)
+				sb.append(String.format("from %s and %s", state == null
+						|| state.equals("") ? country : state, lastPlayedString));
+			else {
+				sb.append(String.format("from %s, plays at ", state == null
+						|| state.equals("") ? country : state));
+
+				for (int i = 0; i < clubs.length; i++) {
+					String club = clubs[i];
+					if (i != 0)
+						sb.append(", ");
+					sb.append(club);
+				}
+
+				sb.append(String.format(", and %s", lastPlayedString));
 			}
-			clubsString = sb.toString();
 		}
-
-		return String.format("%s\t%s\t%s, %s\t%s\t%s\t%s\t%s\t%s\t", id,
-				expires, lastName, firstName, rating, clubsString, state,
-				country, lastPlayed);
+		return sb.toString();
 	}
 
 	public String getBaseRating() {
