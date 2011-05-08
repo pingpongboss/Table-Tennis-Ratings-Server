@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
+import wei.mark.tabletennisratingsserver.util.ProviderParser.ParserUtils;
+
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
 
@@ -14,11 +16,11 @@ public class PlayerModel {
 
 	String provider;
 	String id;
+	String lastName;
+	String firstName;
 
 	@Unindexed
 	String rating;
-	@Unindexed
-	String name;
 	@Unindexed
 	String[] clubs;
 	@Unindexed
@@ -31,13 +33,15 @@ public class PlayerModel {
 	String expires;
 	@Unindexed
 	Date refreshed;
+	@Unindexed
+	String[] searchHistory;
 
 	public PlayerModel() {
 	}
 
 	@Override
 	public String toString() {
-		return String.format("%s (%s)", name, rating);
+		return String.format("%s, %s (%s)", lastName, firstName, rating);
 	}
 
 	public String toDetailedString() {
@@ -55,8 +59,22 @@ public class PlayerModel {
 			clubsString = sb.toString();
 		}
 
-		return String.format("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t", id, expires,
-				name, rating, clubsString, state, country, lastPlayed);
+		return String.format("%s\t%s\t%s, %s\t%s\t%s\t%s\t%s\t%s\t", id,
+				expires, lastName, firstName, rating, clubsString, state,
+				country, lastPlayed);
+	}
+
+	public String getBaseRating() {
+		if ("usatt".equals(provider))
+			return getRating();
+		else if ("rc".equals(provider)) {
+			try {
+				// get up to the +- symbol
+				return getRating().substring(0, getRating().indexOf(177));
+			} catch (Exception ex) {
+			}
+		}
+		return null;
 	}
 
 	public Long getKey() {
@@ -84,11 +102,31 @@ public class PlayerModel {
 	}
 
 	public String getName() {
-		return name;
+		if (firstName == null)
+			return lastName;
+		else
+			return String.format("%s, %s", lastName, firstName);
 	}
 
 	public void setName(String name) {
-		this.name = name;
+		this.lastName = ParserUtils.getLastName(name);
+		this.firstName = ParserUtils.getFirstName(name);
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
 	}
 
 	public String getId() {
@@ -145,5 +183,13 @@ public class PlayerModel {
 
 	public void setRefreshed(Date refreshed) {
 		this.refreshed = refreshed;
+	}
+
+	public String[] getSearchHistory() {
+		return searchHistory;
+	}
+
+	public void setSearchHistory(String[] searchHistory) {
+		this.searchHistory = searchHistory;
 	}
 }

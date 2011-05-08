@@ -31,8 +31,10 @@ public class RatingsCentralParser implements ProviderParser {
 		ArrayList<PlayerModel> players;
 		PlayerModelCache cache;
 
-		String firstName = Utils.getFirstName(query);
-		String lastName = Utils.getLastName(query);
+		query = ParserUtils.sanitizeName(query);
+
+		String firstName = ParserUtils.getFirstName(query);
+		String lastName = ParserUtils.getLastName(query);
 
 		DAO dao = new DAO();
 
@@ -43,6 +45,19 @@ public class RatingsCentralParser implements ProviderParser {
 						provider, query);
 				if (cachedPlayers != null)
 					return cachedPlayers;
+				else if (firstName != null) {
+					// If the search has a first name, check cache for a last
+					// name only search
+					cachedPlayers = dao.getPlayersFromCache(provider, lastName);
+					if (cachedPlayers != null) {
+						ArrayList<PlayerModel> filteredPlayers = new ArrayList<PlayerModel>();
+						for (PlayerModel player : cachedPlayers) {
+							if (player.getFirstName().equals(firstName))
+								filteredPlayers.add(player);
+						}
+						return filteredPlayers;
+					}
+				}
 			}
 
 			URL url = new URL(
@@ -65,9 +80,10 @@ public class RatingsCentralParser implements ProviderParser {
 
 				String playerName = row.get(1).text().trim();
 				// match last name && first name
-				if (lastName.equalsIgnoreCase(Utils.getLastName(playerName))
-						&& (firstName.equals("") || firstName
-								.equalsIgnoreCase(Utils
+				if (lastName.equalsIgnoreCase(ParserUtils
+						.getLastName(playerName))
+						&& (firstName == null || firstName
+								.equalsIgnoreCase(ParserUtils
 										.getFirstName(playerName)))) {
 					PlayerModel player = new PlayerModel();
 
