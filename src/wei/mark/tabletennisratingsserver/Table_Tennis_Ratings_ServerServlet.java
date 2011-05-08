@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
+import wei.mark.tabletennisratingsserver.util.DAO;
 import wei.mark.tabletennisratingsserver.util.ProviderParser;
 import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
@@ -27,25 +28,43 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			throws IOException {
 		String response = null;
 		try {
-			String id = req.getParameter("id").trim();
-			String provider = req.getParameter("provider").trim();
-			String query = req.getParameter("query").trim();
+			AEAction action = AEAction.valueOf(req.getParameter("action")
+					.toUpperCase());
+			String id = req.getParameter("id");
+			String provider = req.getParameter("provider");
+			String query = req.getParameter("query");
 			boolean fresh = Boolean.parseBoolean(req.getParameter("fresh"));
 
-			if (query != null && !query.equals("") && verify(id)) {
-				ArrayList<PlayerModel> players = new ArrayList<PlayerModel>();
+			if (verify(id)) {
+				switch (action) {
+				case SEARCH:
+					if (exists(provider, query)) {
+						ArrayList<PlayerModel> players = new ArrayList<PlayerModel>();
 
-				ProviderParser parser = getProviderParser(provider);
-				if (parser != null)
-					players = parser.playerNameSearch(query, fresh);
+						ProviderParser parser = getProviderParser(provider);
+						if (parser != null)
+							players = parser.playerNameSearch(query, fresh);
 
-				GsonBuilder builder = new GsonBuilder();
-				builder.registerTypeAdapter(BitSet.class,
-						new BitSetSerializer());
-				Gson gson = builder.create();
-				Type type = new TypeToken<ArrayList<PlayerModel>>() {
-				}.getType();
-				response = gson.toJson(players, type);
+						GsonBuilder builder = new GsonBuilder();
+						builder.registerTypeAdapter(BitSet.class,
+								new BitSetSerializer());
+						Gson gson = builder.create();
+						Type type = new TypeToken<ArrayList<PlayerModel>>() {
+						}.getType();
+						response = gson.toJson(players, type);
+					}
+					break;
+				case OPEN:
+					if (exists(provider, query)) {
+						DAO dao = new DAO();
+						boolean result = dao.addSearchHistory(provider, query,
+								id);
+						response = String.valueOf(result);
+					}
+					break;
+				default:
+					break;
+				}
 			}
 		} catch (Exception ex) {
 			log(ex.getMessage());
@@ -65,7 +84,14 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	}
 
 	private boolean verify(String id) {
-		return id != null && !id.equals("");
+		return exists(id);
+	}
+
+	private boolean exists(String... params) {
+		boolean result = true;
+		for (String param : params)
+			result = result && param != null && !param.equals("");
+		return result;
 	}
 
 	private class BitSetSerializer implements JsonSerializer<BitSet> {
@@ -78,4 +104,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 
 	}
 
+	public enum AEAction {
+		SEARCH, OPEN
+	}
 }

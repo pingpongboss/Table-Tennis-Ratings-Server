@@ -53,4 +53,20 @@ public class DAO extends DAOBase {
 
 		ofy().put(cache);
 	}
+
+	public boolean addSearchHistory(String provider, String playerId,
+			String deviceId) {
+		PlayerModel player = ofy().query(PlayerModel.class)
+				.filter("provider", provider).filter("id", playerId).get();
+
+		if (player != null) {
+			if (player.getSearchHistory() == null)
+				player.setSearchHistory(new ArrayList<String>());
+			if (!player.getSearchHistory().contains(deviceId))
+				player.getSearchHistory().add(deviceId);
+			ofy().put(player);
+			return true;
+		}
+		return false;
+	}
 }

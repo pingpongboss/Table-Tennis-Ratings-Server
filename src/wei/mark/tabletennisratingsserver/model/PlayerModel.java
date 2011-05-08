@@ -1,5 +1,6 @@
 package wei.mark.tabletennisratingsserver.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.persistence.Id;
@@ -34,7 +35,7 @@ public class PlayerModel {
 	@Unindexed
 	Date refreshed;
 	@Unindexed
-	String[] searchHistory;
+	ArrayList<String> searchHistory;
 
 	public PlayerModel() {
 	}
@@ -77,6 +78,18 @@ public class PlayerModel {
 		return null;
 	}
 
+	public String getName() {
+		if (firstName == null)
+			return lastName;
+		else
+			return String.format("%s, %s", lastName, firstName);
+	}
+
+	public void setName(String name) {
+		this.lastName = ParserUtils.getLastName(name);
+		this.firstName = ParserUtils.getFirstName(name);
+	}
+
 	public Long getKey() {
 		return key;
 	}
@@ -99,18 +112,6 @@ public class PlayerModel {
 
 	public void setRating(String rating) {
 		this.rating = rating;
-	}
-
-	public String getName() {
-		if (firstName == null)
-			return lastName;
-		else
-			return String.format("%s, %s", lastName, firstName);
-	}
-
-	public void setName(String name) {
-		this.lastName = ParserUtils.getLastName(name);
-		this.firstName = ParserUtils.getFirstName(name);
 	}
 
 	public String getLastName() {
@@ -185,11 +186,11 @@ public class PlayerModel {
 		this.refreshed = refreshed;
 	}
 
-	public String[] getSearchHistory() {
+	public ArrayList<String> getSearchHistory() {
 		return searchHistory;
 	}
 
-	public void setSearchHistory(String[] searchHistory) {
+	public void setSearchHistory(ArrayList<String> searchHistory) {
 		this.searchHistory = searchHistory;
 	}
 }
