@@ -1,7 +1,6 @@
 package wei.mark.tabletennisratingsserver.util;
 
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -59,9 +58,7 @@ public class USATTParser implements ProviderParser {
 				}
 			}
 
-			URL url = new URL(
-					"http://www.usatt.org/history/rating/history/Allplayers.asp?NSearch="
-							+ URLEncoder.encode(lastName, "UTF-8"));
+			URL url = new URL(ParserUtils.getSearchUrl(provider, query));
 
 			Document doc = Jsoup.connect(url.toString()).get();
 			Elements rows = doc.select("tr");

@@ -1,7 +1,6 @@
 package wei.mark.tabletennisratingsserver.util;
 
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -60,9 +59,7 @@ public class RatingsCentralParser implements ProviderParser {
 				}
 			}
 
-			URL url = new URL(
-					"http://www.ratingscentral.com/PlayerList.php?SortOrder=Name&PlayerName="
-							+ URLEncoder.encode(query, "UTF-8"));
+			URL url = new URL(ParserUtils.getSearchUrl(provider, query));
 
 			Document doc = Jsoup.connect(url.toString()).get();
 			Elements rows = doc.select("td[class=ContentSection] tbody > tr");
