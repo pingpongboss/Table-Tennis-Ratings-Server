@@ -85,6 +85,8 @@ public class USATTParser implements ProviderParser {
 					player.setId(row.get(0).text().trim());
 					player.setExpires(row.get(1).text().trim());
 					player.setName(playerName);
+					player.setPlayerId(row.get(2).select("a[href]")
+							.attr("href").split("=")[1]);
 					player.setRating(row.get(3).text().trim());
 					player.setState(row.get(4).text().trim());
 					player.setLastPlayed(row.get(5).text().trim());
