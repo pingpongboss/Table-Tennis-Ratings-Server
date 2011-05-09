@@ -107,6 +107,15 @@ public class PlayerModel {
 		this.firstName = ParserUtils.getFirstName(name);
 	}
 
+	public String getProviderId() {
+		if ("usatt".equals(provider))
+			return getPlayerId();
+		else if ("rc".equals(provider))
+			return getId();
+		else
+			return null;
+	}
+
 	public Long getKey() {
 		return key;
 	}

@@ -45,5 +45,21 @@ public interface ProviderParser {
 			}
 			return null;
 		}
+
+		public static String getDetailsUrl(String provider, String id) {
+			try {
+				if ("usatt".equals(provider)) {
+					return String
+							.format("http://www.usatt.org/history/rating/history/Phistory.asp?Pid=%s",
+									URLEncoder.encode(id, "UTF-8"));
+				} else if ("rc".equals(provider)) {
+					return String
+							.format("http://www.ratingscentral.com/PlayerHistory.php?PlayerID=%s",
+									URLEncoder.encode(id, "UTF-8"));
+				}
+			} catch (Exception ex) {
+			}
+			return null;
+		}
 	}
 }
