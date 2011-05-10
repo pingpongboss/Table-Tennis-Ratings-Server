@@ -62,8 +62,10 @@ public class DAO extends DAOBase {
 		if (player != null) {
 			if (player.getSearchHistory() == null)
 				player.setSearchHistory(new ArrayList<String>());
-			if (!player.getSearchHistory().contains(deviceId))
+			if (!player.getSearchHistory().contains(deviceId)) {
 				player.getSearchHistory().add(deviceId);
+				player.setPopularity(player.getPopularity() + 1);
+			}
 			ofy().put(player);
 			return true;
 		}

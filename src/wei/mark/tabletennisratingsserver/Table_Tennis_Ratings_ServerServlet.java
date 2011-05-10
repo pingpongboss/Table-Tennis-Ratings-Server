@@ -54,8 +54,9 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 						response = gson.toJson(players, type);
 					}
 					break;
-				case OPEN:
+				case DETAILS:
 					if (exists(provider, query)) {
+						// TODO
 						DAO dao = new DAO();
 						boolean result = dao.addSearchHistory(provider, query,
 								id);
@@ -105,6 +106,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	}
 
 	public enum AEAction {
-		SEARCH, OPEN
+		SEARCH, DETAILS
 	}
 }

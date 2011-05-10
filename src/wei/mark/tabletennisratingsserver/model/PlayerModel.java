@@ -19,6 +19,7 @@ public class PlayerModel {
 	String id;
 	String lastName;
 	String firstName;
+	long popularity;
 
 	@Unindexed
 	String rating;
@@ -156,6 +157,14 @@ public class PlayerModel {
 		this.firstName = firstName;
 	}
 
+	public long getPopularity() {
+		return popularity;
+	}
+
+	public void setPopularity(long popularity) {
+		this.popularity = popularity;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -218,6 +227,10 @@ public class PlayerModel {
 
 	public void setSearchHistory(List<String> searchHistory) {
 		this.searchHistory = searchHistory;
+		if (searchHistory == null)
+			setPopularity(0);
+		else
+			setPopularity(searchHistory.size());
 	}
 
 	public String getPlayerId() {
