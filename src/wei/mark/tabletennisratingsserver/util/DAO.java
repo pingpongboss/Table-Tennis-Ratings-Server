@@ -3,6 +3,7 @@ package wei.mark.tabletennisratingsserver.util;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
@@ -16,6 +17,7 @@ public class DAO extends DAOBase {
 	static {
 		ObjectifyService.register(PlayerModelCache.class);
 		ObjectifyService.register(PlayerModel.class);
+		ObjectifyService.register(EventModel.class);
 	}
 
 	public ArrayList<PlayerModel> getPlayersFromCache(String provider,
@@ -54,21 +56,23 @@ public class DAO extends DAOBase {
 		ofy().put(cache);
 	}
 
-	public boolean addSearchHistory(String provider, String playerId,
-			String deviceId) {
-		PlayerModel player = ofy().query(PlayerModel.class)
-				.filter("provider", provider).filter("id", playerId).get();
+	public PlayerModel getPlayer(String provider, String id) {
+		return ofy().query(PlayerModel.class).filter("provider", provider)
+				.filter("id", id).get();
+	}
 
-		if (player != null) {
-			if (player.getSearchHistory() == null)
-				player.setSearchHistory(new ArrayList<String>());
-			if (!player.getSearchHistory().contains(deviceId)) {
-				player.getSearchHistory().add(deviceId);
-				player.setPopularity(player.getPopularity() + 1);
-			}
-			ofy().put(player);
-			return true;
+	public void put(PlayerModel player, ArrayList<EventModel> events) {
+		for (EventModel event : events) {
+			Key<EventModel> key = ofy().query(EventModel.class)
+					.filter("playerId", event.getPlayerId())
+					.filter("id", event.getId()).getKey();
+			event.setKey(key == null ? null : key.getId());
 		}
-		return false;
+
+		Collection<Key<EventModel>> keys = ofy().put(events).keySet();
+
+		player.setEvents(keys);
+
+		ofy().put(player);
 	}
 }

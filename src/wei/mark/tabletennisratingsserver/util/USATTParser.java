@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
@@ -91,6 +92,75 @@ public class USATTParser implements ProviderParser {
 			ArrayList<PlayerModel> cachedPlayers = dao.getPlayersFromCache(
 					provider, query);
 			return cachedPlayers;
+		}
+	}
+
+	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
+			String deviceId) {
+		PlayerModel player;
+
+		if (id == null || id.equals(""))
+			return null;
+
+		DAO dao = new DAO();
+
+		try {
+			player = dao.getPlayer(provider, id);
+
+			if (player == null)
+				return null;
+
+			if (player.getSearchHistory() == null)
+				player.setSearchHistory(new ArrayList<String>());
+			if (!player.getSearchHistory().contains(deviceId)) {
+				player.getSearchHistory().add(deviceId);
+				player.setPopularity(player.getPopularity() + 1);
+			}
+			dao.ofy().put(player);
+
+			if (!fresh) {
+				if (player.getEvents() != null)
+					return new ArrayList<EventModel>(dao.ofy()
+							.get(player.getEvents()).values());
+			}
+
+			URL url = new URL(ParserUtils.getDetailsUrl(provider,
+					player.getProviderId()));
+
+			Document doc = Jsoup.connect(url.toString()).get();
+			Elements rows = doc.select("table[width=75%] > tr:gt(1)");
+
+			ArrayList<EventModel> events = new ArrayList<EventModel>();
+
+			for (int i = 0; i < rows.size(); i++) {
+				Elements row = rows.get(i).children();
+
+				if (row.size() != 7)
+					continue;
+
+				EventModel event = new EventModel();
+
+				event.setPlayerId(id);
+
+				event.setId(row.get(0).select("a[href]").attr("href")
+						.split("=")[1]);
+				event.setName(row.get(0).text().trim());
+				event.setDate(row.get(1).text().trim());
+				event.setRatingBefore(row.get(2).text().trim());
+				event.setRatingAfter(row.get(3).text().trim());
+				event.setRatingChange(row.get(4).text().trim());
+				event.setMatches(row.get(5).text().trim());
+				event.setRecord(row.get(6).text().trim());
+
+				events.add(event);
+			}
+
+			dao.put(player, events);
+
+			return events;
+		} catch (Exception ex) {
+			return new ArrayList<EventModel>(dao.ofy()
+					.get(dao.getPlayer(provider, id).getEvents()).values());
 		}
 	}
 }

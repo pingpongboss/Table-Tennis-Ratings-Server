@@ -3,10 +3,14 @@ package wei.mark.tabletennisratingsserver.util;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
+import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 
 public interface ProviderParser {
 	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh);
+
+	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
+			String deviceId);
 
 	public class ParserUtils {
 		public static String getFirstName(String fullName) {
@@ -84,7 +88,7 @@ public interface ProviderParser {
 					return filteredPlayers;
 				}
 			}
-			
+
 			return null;
 		}
 	}

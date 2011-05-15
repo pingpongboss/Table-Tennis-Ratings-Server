@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
-import wei.mark.tabletennisratingsserver.util.DAO;
 import wei.mark.tabletennisratingsserver.util.ProviderParser;
 import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
@@ -56,11 +56,18 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 					break;
 				case DETAILS:
 					if (exists(provider, query)) {
-						// TODO
-						DAO dao = new DAO();
-						boolean result = dao.addSearchHistory(provider, query,
-								id);
-						response = String.valueOf(result);
+						ArrayList<EventModel> events = new ArrayList<EventModel>();
+						ProviderParser parser = getProviderParser(provider);
+						if (parser != null)
+							events = parser.getPlayerDetails(query, fresh, id);
+
+						GsonBuilder builder = new GsonBuilder();
+						builder.registerTypeAdapter(BitSet.class,
+								new BitSetSerializer());
+						Gson gson = builder.create();
+						Type type = new TypeToken<ArrayList<EventModel>>() {
+						}.getType();
+						response = gson.toJson(events, type);
 					}
 					break;
 				default:

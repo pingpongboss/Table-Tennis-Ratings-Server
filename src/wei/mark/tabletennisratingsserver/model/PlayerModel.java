@@ -1,5 +1,6 @@
 package wei.mark.tabletennisratingsserver.model;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import javax.persistence.Id;
 
 import wei.mark.tabletennisratingsserver.util.ProviderParser.ParserUtils;
 
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Unindexed;
 
@@ -20,6 +22,7 @@ public class PlayerModel {
 	String lastName;
 	String firstName;
 	long popularity;
+	String playerId;
 
 	@Unindexed
 	String rating;
@@ -38,7 +41,7 @@ public class PlayerModel {
 	@Unindexed
 	List<String> searchHistory;
 	@Unindexed
-	String playerId;
+	Collection<Key<EventModel>> events;
 
 	public PlayerModel() {
 	}
@@ -239,5 +242,13 @@ public class PlayerModel {
 
 	public void setPlayerId(String playerId) {
 		this.playerId = playerId;
+	}
+
+	public Collection<Key<EventModel>> getEvents() {
+		return events;
+	}
+
+	public void setEvents(Collection<Key<EventModel>> events) {
+		this.events = events;
 	}
 }

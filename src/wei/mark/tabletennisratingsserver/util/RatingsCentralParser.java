@@ -9,6 +9,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
@@ -101,5 +102,12 @@ public class RatingsCentralParser implements ProviderParser {
 					provider, query);
 			return cachedPlayers;
 		}
+	}
+
+	@Override
+	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
+			String deviceId) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
