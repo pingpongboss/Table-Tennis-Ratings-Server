@@ -61,5 +61,31 @@ public interface ProviderParser {
 			}
 			return null;
 		}
+
+		public static ArrayList<PlayerModel> getSearchCache(String provider,
+				String query, DAO dao) {
+			String firstName = ParserUtils.getFirstName(query);
+			String lastName = ParserUtils.getLastName(query);
+
+			ArrayList<PlayerModel> cachedPlayers = dao.getPlayersFromCache(
+					provider, query);
+			if (cachedPlayers != null)
+				return cachedPlayers;
+			else if (firstName != null) {
+				// If the search has a first name, check cache for a last
+				// name only search
+				cachedPlayers = dao.getPlayersFromCache(provider, lastName);
+				if (cachedPlayers != null) {
+					ArrayList<PlayerModel> filteredPlayers = new ArrayList<PlayerModel>();
+					for (PlayerModel player : cachedPlayers) {
+						if (player.getFirstName().equals(firstName))
+							filteredPlayers.add(player);
+					}
+					return filteredPlayers;
+				}
+			}
+			
+			return null;
+		}
 	}
 }

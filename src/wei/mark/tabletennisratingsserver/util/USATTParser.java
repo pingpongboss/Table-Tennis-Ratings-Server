@@ -39,23 +39,10 @@ public class USATTParser implements ProviderParser {
 		try {
 			if (!fresh) {
 				// first check cache
-				ArrayList<PlayerModel> cachedPlayers = dao.getPlayersFromCache(
-						provider, query);
+				ArrayList<PlayerModel> cachedPlayers = ParserUtils
+						.getSearchCache(provider, query, dao);
 				if (cachedPlayers != null)
 					return cachedPlayers;
-				else if (firstName != null) {
-					// If the search has a first name, check cache for a last
-					// name only search
-					cachedPlayers = dao.getPlayersFromCache(provider, lastName);
-					if (cachedPlayers != null) {
-						ArrayList<PlayerModel> filteredPlayers = new ArrayList<PlayerModel>();
-						for (PlayerModel player : cachedPlayers) {
-							if (player.getFirstName().equals(firstName))
-								filteredPlayers.add(player);
-						}
-						return filteredPlayers;
-					}
-				}
 			}
 
 			URL url = new URL(ParserUtils.getSearchUrl(provider, query));
