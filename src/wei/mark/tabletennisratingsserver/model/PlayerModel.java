@@ -22,7 +22,6 @@ public class PlayerModel {
 	String lastName;
 	String firstName;
 	long popularity;
-	String playerId;
 
 	@Unindexed
 	String rating;
@@ -40,6 +39,8 @@ public class PlayerModel {
 	Date refreshed;
 	@Unindexed
 	List<String> searchHistory;
+	@Unindexed
+	String playerId;
 	@Unindexed
 	Collection<Key<EventModel>> events;
 
@@ -92,7 +93,9 @@ public class PlayerModel {
 		else if ("rc".equals(provider)) {
 			try {
 				// get up to the +- symbol
-				return getRating().substring(0, getRating().indexOf(177));
+				String base = getRating()
+						.substring(0, getRating().indexOf(177));
+				return base.equals("") ? getRating() : base;
 			} catch (Exception ex) {
 			}
 		}

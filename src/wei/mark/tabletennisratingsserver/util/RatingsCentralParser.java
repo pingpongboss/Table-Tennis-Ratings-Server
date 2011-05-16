@@ -107,7 +107,71 @@ public class RatingsCentralParser implements ProviderParser {
 	@Override
 	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
 			String deviceId) {
-		// TODO Auto-generated method stub
-		return null;
+		PlayerModel player;
+
+		if (id == null || id.equals(""))
+			return null;
+
+		DAO dao = new DAO();
+
+		try {
+			player = dao.getPlayer(provider, id);
+
+			if (player == null)
+				return null;
+
+			if (player.getSearchHistory() == null)
+				player.setSearchHistory(new ArrayList<String>());
+			if (!player.getSearchHistory().contains(deviceId)) {
+				player.getSearchHistory().add(deviceId);
+				player.setPopularity(player.getPopularity() + 1);
+			}
+			dao.ofy().put(player);
+
+			if (!fresh) {
+				if (player.getEvents() != null)
+					return new ArrayList<EventModel>(dao.ofy()
+							.get(player.getEvents()).values());
+			}
+
+			URL url = new URL(ParserUtils.getDetailsUrl(provider,
+					player.getProviderId()));
+
+			Document doc = Jsoup.connect(url.toString()).get();
+			Elements rows = doc.select("td[class=ContentSection] tbody > tr");
+
+			ArrayList<EventModel> events = new ArrayList<EventModel>();
+
+			for (int i = 0; i < rows.size(); i++) {
+				Elements row = rows.get(i).children();
+
+				if (row.size() != 5)
+					continue;
+
+				EventModel event = new EventModel();
+
+				String idHref = row.get(1).select("a[href]").attr("href");
+
+				event.setPlayerId(id);
+				event.setProvider(provider);
+
+				event.setDate(row.get(0).text().trim());
+				event.setId(idHref.substring(idHref.indexOf('=') + 1,
+						idHref.indexOf('#')));
+				event.setName(row.get(1).text().trim());
+				event.setRatingBefore(row.get(2).text().trim());
+				event.setRatingChange(row.get(3).text().trim());
+				event.setRatingAfter(row.get(4).text().trim());
+
+				events.add(event);
+			}
+
+			dao.put(player, events);
+
+			return events;
+		} catch (Exception ex) {
+			return new ArrayList<EventModel>(dao.ofy()
+					.get(dao.getPlayer(provider, id).getEvents()).values());
+		}
 	}
 }

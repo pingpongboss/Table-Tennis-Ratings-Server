@@ -10,10 +10,12 @@ public class EventModel {
 	@Id
 	Long key;
 
+	String provider;
 	String playerId;
 	String id;
-	String name;
 
+	@Unindexed
+	String name;
 	@Unindexed
 	String date;
 	@Unindexed
@@ -30,12 +32,25 @@ public class EventModel {
 	public EventModel() {
 	}
 
+	@Override
+	public String toString() {
+		return String.format("%s %s (%s)", name, date, ratingChange);
+	}
+
 	public Long getKey() {
 		return key;
 	}
 
 	public void setKey(Long key) {
 		this.key = key;
+	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
 
 	public String getPlayerId() {

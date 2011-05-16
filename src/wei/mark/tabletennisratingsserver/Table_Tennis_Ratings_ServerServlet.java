@@ -79,6 +79,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 		}
 
 		resp.setContentType("text/plain");
+		resp.setCharacterEncoding("UTF-8");
 		resp.getWriter().println(response);
 	}
 

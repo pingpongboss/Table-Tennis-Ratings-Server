@@ -141,6 +141,7 @@ public class USATTParser implements ProviderParser {
 				EventModel event = new EventModel();
 
 				event.setPlayerId(id);
+				event.setProvider(provider);
 
 				event.setId(row.get(0).select("a[href]").attr("href")
 						.split("=")[1]);

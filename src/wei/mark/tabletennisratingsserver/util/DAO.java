@@ -64,6 +64,7 @@ public class DAO extends DAOBase {
 	public void put(PlayerModel player, ArrayList<EventModel> events) {
 		for (EventModel event : events) {
 			Key<EventModel> key = ofy().query(EventModel.class)
+					.filter("provider", player.getProvider())
 					.filter("playerId", event.getPlayerId())
 					.filter("id", event.getId()).getKey();
 			event.setKey(key == null ? null : key.getId());
