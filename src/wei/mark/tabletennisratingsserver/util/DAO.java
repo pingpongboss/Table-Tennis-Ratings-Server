@@ -42,7 +42,11 @@ public class DAO extends DAOBase {
 			Key<PlayerModel> key = ofy().query(PlayerModel.class)
 					.filter("provider", player.getProvider())
 					.filter("id", player.getId()).getKey();
-			player.setKey(key == null ? null : key.getId());
+			if (key != null) {
+				player.setKey(key.getId());
+				// restore events
+				player.setEvents(ofy().get(key).getEvents());
+			}
 		}
 
 		Collection<Key<PlayerModel>> keys = ofy().put(players).keySet();
