@@ -7,6 +7,8 @@ import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 
 public interface ProviderParser {
+	public static final long freshThreshold = 1*24*60*60*1000;
+	
 	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh);
 
 	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,

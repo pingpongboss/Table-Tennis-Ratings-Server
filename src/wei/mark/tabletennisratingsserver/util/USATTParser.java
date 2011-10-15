@@ -42,8 +42,19 @@ public class USATTParser implements ProviderParser {
 				// first check cache
 				ArrayList<PlayerModel> cachedPlayers = ParserUtils
 						.getSearchCache(provider, query, dao);
-				if (cachedPlayers != null)
-					return cachedPlayers;
+				if (cachedPlayers != null) {
+					boolean staleData = false;
+					Date now = new Date();
+					for (PlayerModel player : cachedPlayers) {
+						if (now.getTime() - player.getRefreshed().getTime() > freshThreshold) {
+							staleData = true;
+							break;
+						}
+					}
+					
+					if (!staleData)
+						return cachedPlayers;
+				}
 			}
 
 			URL url = new URL(ParserUtils.getSearchUrl(provider, query));
