@@ -45,7 +45,10 @@ public class DAO extends DAOBase {
 			if (key != null) {
 				player.setKey(key.getId());
 				// restore events
-				player.setEvents(ofy().get(key).getEvents());
+				PlayerModel oldPlayer = ofy().get(key);
+				player.setEvents(oldPlayer.getEvents());
+				player.setSearchHistory(oldPlayer.getSearchHistory());
+				player.setPopularity(oldPlayer.getPopularity());
 			}
 		}
 
