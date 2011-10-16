@@ -140,9 +140,14 @@ public class RatingsCentralParser implements ProviderParser {
 			dao.ofy().put(player);
 
 			if (!fresh) {
-				if (player.getEvents() != null)
-					return new ArrayList<EventModel>(dao.ofy()
-							.get(player.getEvents()).values());
+				if (player.getEvents() != null) {
+					ArrayList<EventModel> cachedEvents = new ArrayList<EventModel>(
+							dao.ofy().get(player.getEvents()).values());
+					if (cachedEvents.size() > 0
+							&& cachedEvents.get(0).getDate() == player
+									.getLastPlayed())
+						return cachedEvents;
+				}
 			}
 
 			URL url = new URL(ParserUtils.getDetailsUrl(provider,
