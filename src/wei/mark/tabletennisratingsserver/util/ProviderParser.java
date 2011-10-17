@@ -34,6 +34,18 @@ public interface ProviderParser {
 		public static String sanitizeName(String name) {
 			return name.trim();
 		}
+		
+		public static boolean firstNamePartsEqual(String firstNameQuery, String firstName) {
+			String[] querySplit = firstNameQuery.split(" ");
+			String[] firstNameSplit = firstName.split(" ", querySplit.length + 1);
+			
+			if (querySplit.length > firstNameSplit.length) return false;
+			
+			for (int i = 0; i < querySplit.length; i++) {
+				if (!querySplit[i].equals(firstNameSplit[i])) return false;
+			}
+			return true;
+		}
 
 		public static String getSearchUrl(String provider, String query) {
 			try {
@@ -62,6 +74,24 @@ public interface ProviderParser {
 					return String
 							.format("http://www.ratingscentral.com/PlayerHistory.php?PlayerID=%s",
 									URLEncoder.encode(id, "UTF-8"));
+				}
+			} catch (Exception ex) {
+			}
+			return null;
+		}
+
+		public static String getEventDetailsUrl(String provider, String playerId, String eventId) {
+			try {
+				if ("usatt".equals(provider)) {
+					return String
+							.format("http://www.usatt.org/history/rating/history/TResult.asp?Pid=%s&Tid=%s",
+									URLEncoder.encode(playerId, "UTF-8"),
+									URLEncoder.encode(eventId, "UTF-8"));
+				} else if ("rc".equals(provider)) {
+					return String
+							.format("http://ratingscentral.com/EventDetail.php?EventID=%s#P%s",
+									URLEncoder.encode(eventId, "UTF-8"),
+									URLEncoder.encode(playerId, "UTF-8"));
 				}
 			} catch (Exception ex) {
 			}

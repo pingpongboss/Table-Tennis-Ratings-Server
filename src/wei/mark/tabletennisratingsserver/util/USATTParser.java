@@ -51,7 +51,7 @@ public class USATTParser implements ProviderParser {
 							break;
 						}
 					}
-					
+
 					if (!staleData)
 						return cachedPlayers;
 				}
@@ -75,9 +75,9 @@ public class USATTParser implements ProviderParser {
 				// match last name && first name
 				if (lastName.equalsIgnoreCase(ParserUtils
 						.getLastName(playerName))
-						&& (firstName == null || firstName
-								.equalsIgnoreCase(ParserUtils
-										.getFirstName(playerName)))) {
+						&& (firstName == null || ParserUtils
+								.firstNamePartsEqual(firstName,
+										ParserUtils.getFirstName(playerName)))) {
 					PlayerModel player = new PlayerModel();
 
 					player.setProvider(provider);

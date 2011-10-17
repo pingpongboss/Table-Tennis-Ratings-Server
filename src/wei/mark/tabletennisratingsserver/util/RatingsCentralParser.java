@@ -52,7 +52,7 @@ public class RatingsCentralParser implements ProviderParser {
 							break;
 						}
 					}
-					
+
 					if (!staleData)
 						return cachedPlayers;
 				}
@@ -78,15 +78,16 @@ public class RatingsCentralParser implements ProviderParser {
 				// match last name && first name
 				if (lastName.equalsIgnoreCase(ParserUtils
 						.getLastName(playerName))
-						&& (firstName == null || firstName
-								.equalsIgnoreCase(ParserUtils
-										.getFirstName(playerName)))) {
+						&& (firstName == null || ParserUtils
+								.firstNamePartsEqual(firstName,
+										ParserUtils.getFirstName(playerName)))) {
 					PlayerModel player = new PlayerModel();
 
 					player.setProvider(provider);
 					player.setRating(row.get(0).text().trim());
 					player.setName(playerName);
 					player.setId(row.get(2).text().trim());
+					player.setPlayerId(player.getId());
 					Elements clubElements = row.get(3).children();
 					ArrayList<String> clubs = new ArrayList<String>();
 					for (Element clubElement : clubElements) {
