@@ -22,6 +22,7 @@ public class PlayerModel {
 	String lastName;
 	String firstName;
 	long popularity;
+	String facebookId;
 
 	@Unindexed
 	String rating;
@@ -169,6 +170,14 @@ public class PlayerModel {
 
 	public void setPopularity(long popularity) {
 		this.popularity = popularity;
+	}
+
+	public String getFacebookId() {
+		return facebookId;
+	}
+
+	public void setFacebookId(String facebookId) {
+		this.facebookId = facebookId;
 	}
 
 	public String getId() {

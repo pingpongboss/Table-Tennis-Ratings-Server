@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import wei.mark.tabletennisratingsserver.model.EventModel;
+import wei.mark.tabletennisratingsserver.model.FriendModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
+import wei.mark.tabletennisratingsserver.util.FacebookParser;
 import wei.mark.tabletennisratingsserver.util.ProviderParser;
 import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
@@ -70,6 +72,19 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 						response = gson.toJson(events, type);
 					}
 					break;
+				case FRIENDS:
+					if (exists(id, query)) {
+						ArrayList<FriendModel> friends = FacebookParser
+								.getParser().getFriends(id, query);
+						GsonBuilder builder = new GsonBuilder();
+						builder.registerTypeAdapter(BitSet.class,
+								new BitSetSerializer());
+						Gson gson = builder.create();
+						Type type = new TypeToken<ArrayList<FriendModel>>() {
+						}.getType();
+						response = gson.toJson(friends, type);
+					}
+					break;
 				default:
 					break;
 				}
@@ -114,6 +129,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	}
 
 	public enum AEAction {
-		SEARCH, DETAILS
+		SEARCH, DETAILS, FRIENDS
 	}
 }
