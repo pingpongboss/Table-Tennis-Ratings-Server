@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.FriendModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
+import wei.mark.tabletennisratingsserver.util.DAO;
 import wei.mark.tabletennisratingsserver.util.FacebookParser;
 import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
@@ -26,6 +28,9 @@ import com.google.gson.reflect.TypeToken;
 
 @SuppressWarnings("serial")
 public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
+	private static final Logger log = Logger
+			.getLogger(Table_Tennis_Ratings_ServerServlet.class.getName());
+
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
 		String response = null;
@@ -117,6 +122,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			String accessToken = req.getParameter("accessToken");
 			boolean linked = Boolean.parseBoolean(req.getParameter("linked"));
 			String playerId = req.getParameter("playerId");
+			String provider = req.getParameter("provider");
 			String editor = req.getParameter("editor");
 
 			if (verify(id)) {
@@ -135,16 +141,12 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 					}
 					break;
 				case LINK:
-					if (exists(playerId, facebookId, editor)) {
-						ArrayList<FriendModel> friends = FacebookParser
-								.getFriends(facebookId, accessToken, linked);
-						GsonBuilder builder = new GsonBuilder();
-						builder.registerTypeAdapter(BitSet.class,
-								new BitSetSerializer());
-						Gson gson = builder.create();
-						Type type = new TypeToken<ArrayList<FriendModel>>() {
-						}.getType();
-						response = gson.toJson(friends, type);
+					if (exists(playerId, provider, facebookId, editor)) {
+						DAO dao = new DAO();
+						dao.link(playerId, provider, facebookId);
+						log.info("LINK: "
+								+ String.format("%s linked %s(%s) to %s.",
+										editor, playerId, provider, facebookId));
 					}
 					break;
 				default:

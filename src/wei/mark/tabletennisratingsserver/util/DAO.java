@@ -88,4 +88,11 @@ public class DAO extends DAOBase {
 
 		ofy().put(player);
 	}
+
+	public void link(String playerId, String provider, String facebookId) {
+		PlayerModel player = ofy().query(PlayerModel.class)
+				.filter("id", playerId).filter("provider", provider).get();
+		player.setFacebookId(facebookId);
+		ofy().put(player);
+	}
 }
