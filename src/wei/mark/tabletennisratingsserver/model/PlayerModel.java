@@ -6,7 +6,7 @@ import java.util.List;
 
 import javax.persistence.Id;
 
-import wei.mark.tabletennisratingsserver.util.ProviderParser.ParserUtils;
+import wei.mark.tabletennisratingsserver.util.ParserUtils;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;

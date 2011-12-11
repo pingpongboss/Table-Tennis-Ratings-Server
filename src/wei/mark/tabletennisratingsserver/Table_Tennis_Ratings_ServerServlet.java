@@ -14,7 +14,6 @@ import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.FriendModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.util.FacebookParser;
-import wei.mark.tabletennisratingsserver.util.ProviderParser;
 import wei.mark.tabletennisratingsserver.util.RatingsCentralParser;
 import wei.mark.tabletennisratingsserver.util.USATTParser;
 
@@ -51,9 +50,12 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 					if (exists(provider, query)) {
 						ArrayList<PlayerModel> players = new ArrayList<PlayerModel>();
 
-						ProviderParser parser = getProviderParser(provider);
-						if (parser != null)
-							players = parser.playerNameSearch(query, fresh);
+						if (provider.toLowerCase().equals("rc"))
+							players = RatingsCentralParser.playerNameSearch(
+									query, fresh);
+						else if (provider.toLowerCase().equals("usatt"))
+							players = USATTParser
+									.playerNameSearch(query, fresh);
 
 						GsonBuilder builder = new GsonBuilder();
 						builder.registerTypeAdapter(BitSet.class,
@@ -67,9 +69,13 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 				case DETAILS:
 					if (exists(provider, query)) {
 						ArrayList<EventModel> events = new ArrayList<EventModel>();
-						ProviderParser parser = getProviderParser(provider);
-						if (parser != null)
-							events = parser.getPlayerDetails(query, fresh, id);
+
+						if (provider.toLowerCase().equals("rc"))
+							events = RatingsCentralParser.getPlayerDetails(
+									query, fresh, id);
+						else if (provider.toLowerCase().equals("usatt"))
+							events = USATTParser.getPlayerDetails(query, fresh,
+									id);
 
 						GsonBuilder builder = new GsonBuilder();
 						builder.registerTypeAdapter(BitSet.class,
@@ -152,15 +158,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 		resp.setContentType("text/plain");
 		resp.setCharacterEncoding("UTF-8");
 		resp.getWriter().println(response);
-	}
-
-	private ProviderParser getProviderParser(String provider) {
-		if ("rc".equals(provider))
-			return RatingsCentralParser.getParser();
-		else if ("usatt".equals(provider))
-			return USATTParser.getParser();
-		else
-			return null;
 	}
 
 	private boolean verify(String id) {

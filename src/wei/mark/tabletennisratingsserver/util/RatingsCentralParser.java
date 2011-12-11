@@ -13,21 +13,11 @@ import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
-public class RatingsCentralParser implements ProviderParser {
-	private static RatingsCentralParser mParser;
+public class RatingsCentralParser {
 	private static final String provider = "rc";
 
-	private RatingsCentralParser() {
-	}
-
-	public static synchronized RatingsCentralParser getParser() {
-		if (mParser == null)
-			mParser = new RatingsCentralParser();
-		return mParser;
-	}
-
-	@Override
-	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
+	public static ArrayList<PlayerModel> playerNameSearch(String query,
+			boolean fresh) {
 		ArrayList<PlayerModel> players;
 		PlayerModelCache cache;
 
@@ -47,7 +37,7 @@ public class RatingsCentralParser implements ProviderParser {
 					boolean staleData = false;
 					Date now = new Date();
 					for (PlayerModel player : cachedPlayers) {
-						if (now.getTime() - player.getRefreshed().getTime() > freshThreshold) {
+						if (now.getTime() - player.getRefreshed().getTime() > ParserUtils.FRESH_THRESHOLD) {
 							staleData = true;
 							break;
 						}
@@ -116,9 +106,8 @@ public class RatingsCentralParser implements ProviderParser {
 		}
 	}
 
-	@Override
-	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
-			String deviceId) {
+	public static ArrayList<EventModel> getPlayerDetails(String id,
+			boolean fresh, String deviceId) {
 		PlayerModel player;
 
 		if (id == null || id.equals(""))

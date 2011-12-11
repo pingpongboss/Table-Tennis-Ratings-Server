@@ -12,21 +12,11 @@ import wei.mark.tabletennisratingsserver.model.EventModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModel;
 import wei.mark.tabletennisratingsserver.model.PlayerModelCache;
 
-public class USATTParser implements ProviderParser {
-	private static USATTParser mParser;
+public class USATTParser {
 	private static final String provider = "usatt";
 
-	private USATTParser() {
-	}
-
-	public static synchronized USATTParser getParser() {
-		if (mParser == null)
-			mParser = new USATTParser();
-		return mParser;
-	}
-
-	@Override
-	public ArrayList<PlayerModel> playerNameSearch(String query, boolean fresh) {
+	public static ArrayList<PlayerModel> playerNameSearch(String query,
+			boolean fresh) {
 		ArrayList<PlayerModel> players;
 		PlayerModelCache cache;
 
@@ -46,7 +36,7 @@ public class USATTParser implements ProviderParser {
 					boolean staleData = false;
 					Date now = new Date();
 					for (PlayerModel player : cachedPlayers) {
-						if (now.getTime() - player.getRefreshed().getTime() > freshThreshold) {
+						if (now.getTime() - player.getRefreshed().getTime() > ParserUtils.FRESH_THRESHOLD) {
 							staleData = true;
 							break;
 						}
@@ -106,8 +96,8 @@ public class USATTParser implements ProviderParser {
 		}
 	}
 
-	public ArrayList<EventModel> getPlayerDetails(String id, boolean fresh,
-			String deviceId) {
+	public static ArrayList<EventModel> getPlayerDetails(String id,
+			boolean fresh, String deviceId) {
 		PlayerModel player;
 
 		if (id == null || id.equals(""))
