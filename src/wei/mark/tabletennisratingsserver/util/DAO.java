@@ -68,6 +68,11 @@ public class DAO extends DAOBase {
 				.filter("id", id).get();
 	}
 
+	public boolean existsPlayer(String facebookId) {
+		return ofy().query(PlayerModel.class).filter("facebookId", facebookId)
+				.count() > 0;
+	}
+
 	public void put(PlayerModel player, ArrayList<EventModel> events) {
 		for (EventModel event : events) {
 			Key<EventModel> key = ofy().query(EventModel.class)

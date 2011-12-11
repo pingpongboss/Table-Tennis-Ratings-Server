@@ -27,7 +27,7 @@ public class FacebookParser {
 	}
 
 	public ArrayList<FriendModel> getFriends(String facebookId,
-			String accessToken) {
+			String accessToken, boolean linked) {
 		HttpURLConnection connection = null;
 		try {
 			URL url = new URL(GRAPH_PATH_BASE + facebookId
@@ -55,7 +55,18 @@ public class FacebookParser {
 						.getString("name")));
 			}
 
-			return friendsArray;
+			if (linked) {
+				ArrayList<FriendModel> linkedFriends = new ArrayList<FriendModel>();
+				DAO dao = new DAO();
+				for (FriendModel friend : friendsArray) {
+					if (dao.existsPlayer(friend.getId())) {
+						linkedFriends.add(friend);
+					}
+				}
+				return linkedFriends;
+			} else {
+				return friendsArray;
+			}
 		} catch (Exception e) {
 			return null;
 		} finally {

@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.BitSet;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,6 +37,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			String provider = req.getParameter("provider");
 			String query = req.getParameter("query");
 			boolean fresh = Boolean.parseBoolean(req.getParameter("fresh"));
+			boolean linked = Boolean.parseBoolean(req.getParameter("linked"));
 
 			if (verify(id)) {
 				switch (action) {
@@ -75,7 +77,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 				case FRIENDS:
 					if (exists(id, query)) {
 						ArrayList<FriendModel> friends = FacebookParser
-								.getParser().getFriends(id, query);
+								.getParser().getFriends(id, query, linked);
 						GsonBuilder builder = new GsonBuilder();
 						builder.registerTypeAdapter(BitSet.class,
 								new BitSetSerializer());
@@ -96,6 +98,11 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 		resp.setContentType("text/plain");
 		resp.setCharacterEncoding("UTF-8");
 		resp.getWriter().println(response);
+	}
+
+	public void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		
 	}
 
 	private ProviderParser getProviderParser(String provider) {
