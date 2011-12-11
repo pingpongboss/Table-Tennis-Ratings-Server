@@ -31,8 +31,15 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			throws IOException {
 		String response = null;
 		try {
-			AEAction action = AEAction.valueOf(req.getParameter("action")
-					.toUpperCase());
+			String path = req.getPathInfo();
+			if (path == null) {
+				// do nothing
+				return;
+			}
+
+			path = path.substring(1);
+			AEAction action = AEAction.valueOf(path.toUpperCase());
+			
 			String id = req.getParameter("id");
 			String provider = req.getParameter("provider");
 			String query = req.getParameter("query");
@@ -102,7 +109,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		
+
 	}
 
 	private ProviderParser getProviderParser(String provider) {

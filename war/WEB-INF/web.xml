@@ -17,7 +17,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Table_Tennis_Ratings_Server</servlet-name>
-		<url-pattern>/table_tennis_ratings_server</url-pattern>
+		<url-pattern>/table_tennis_ratings_server/*</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>StatusCheck_Server</servlet-name>
