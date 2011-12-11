@@ -39,7 +39,7 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 
 			path = path.substring(1);
 			AEAction action = AEAction.valueOf(path.toUpperCase());
-			
+
 			String id = req.getParameter("id");
 			String provider = req.getParameter("provider");
 			String query = req.getParameter("query");
@@ -109,7 +109,49 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 
 	public void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		String response = null;
+		try {
+			String path = req.getPathInfo();
+			if (path == null) {
+				// do nothing
+				return;
+			}
 
+			path = path.substring(1);
+			AEAction action = AEAction.valueOf(path.toUpperCase());
+
+			String id = req.getParameter("id");
+			String facebookId = req.getParameter("facebookId");
+			String accessToken = req.getParameter("accessToken");
+			boolean linked = Boolean.parseBoolean(req.getParameter("linked"));
+
+			if (verify(id)) {
+				switch (action) {
+				case FRIENDS:
+					if (exists(facebookId, accessToken)) {
+						ArrayList<FriendModel> friends = FacebookParser
+								.getParser().getFriends(facebookId,
+										accessToken, linked);
+						GsonBuilder builder = new GsonBuilder();
+						builder.registerTypeAdapter(BitSet.class,
+								new BitSetSerializer());
+						Gson gson = builder.create();
+						Type type = new TypeToken<ArrayList<FriendModel>>() {
+						}.getType();
+						response = gson.toJson(friends, type);
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		} catch (Exception ex) {
+			log(ex.getMessage());
+		}
+
+		resp.setContentType("text/plain");
+		resp.setCharacterEncoding("UTF-8");
+		resp.getWriter().println(response);
 	}
 
 	private ProviderParser getProviderParser(String provider) {
