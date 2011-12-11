@@ -12,21 +12,10 @@ import com.google.appengine.repackaged.org.json.JSONArray;
 import com.google.appengine.repackaged.org.json.JSONObject;
 
 public class FacebookParser {
-	private static FacebookParser mParser;
-
 	public static final String GRAPH_PATH_BASE = "https://graph.facebook.com/";
 	public static final String GRAPH_PATH_PART_FRIENDS = "/friends?access_token=";
 
-	private FacebookParser() {
-	}
-
-	public static synchronized FacebookParser getParser() {
-		if (mParser == null)
-			mParser = new FacebookParser();
-		return mParser;
-	}
-
-	public ArrayList<FriendModel> getFriends(String facebookId,
+	public static ArrayList<FriendModel> getFriends(String facebookId,
 			String accessToken, boolean linked) {
 		HttpURLConnection connection = null;
 		try {

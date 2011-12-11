@@ -44,7 +44,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			String provider = req.getParameter("provider");
 			String query = req.getParameter("query");
 			boolean fresh = Boolean.parseBoolean(req.getParameter("fresh"));
-			boolean linked = Boolean.parseBoolean(req.getParameter("linked"));
 
 			if (verify(id)) {
 				switch (action) {
@@ -81,19 +80,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 						response = gson.toJson(events, type);
 					}
 					break;
-				case FRIENDS:
-					if (exists(id, query)) {
-						ArrayList<FriendModel> friends = FacebookParser
-								.getParser().getFriends(id, query, linked);
-						GsonBuilder builder = new GsonBuilder();
-						builder.registerTypeAdapter(BitSet.class,
-								new BitSetSerializer());
-						Gson gson = builder.create();
-						Type type = new TypeToken<ArrayList<FriendModel>>() {
-						}.getType();
-						response = gson.toJson(friends, type);
-					}
-					break;
 				default:
 					break;
 				}
@@ -124,14 +110,28 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 			String facebookId = req.getParameter("facebookId");
 			String accessToken = req.getParameter("accessToken");
 			boolean linked = Boolean.parseBoolean(req.getParameter("linked"));
+			String playerId = req.getParameter("playerId");
+			String editor = req.getParameter("editor");
 
 			if (verify(id)) {
 				switch (action) {
 				case FRIENDS:
 					if (exists(facebookId, accessToken)) {
 						ArrayList<FriendModel> friends = FacebookParser
-								.getParser().getFriends(facebookId,
-										accessToken, linked);
+								.getFriends(facebookId, accessToken, linked);
+						GsonBuilder builder = new GsonBuilder();
+						builder.registerTypeAdapter(BitSet.class,
+								new BitSetSerializer());
+						Gson gson = builder.create();
+						Type type = new TypeToken<ArrayList<FriendModel>>() {
+						}.getType();
+						response = gson.toJson(friends, type);
+					}
+					break;
+				case LINK:
+					if (exists(playerId, facebookId, editor)) {
+						ArrayList<FriendModel> friends = FacebookParser
+								.getFriends(facebookId, accessToken, linked);
 						GsonBuilder builder = new GsonBuilder();
 						builder.registerTypeAdapter(BitSet.class,
 								new BitSetSerializer());
@@ -185,6 +185,6 @@ public class Table_Tennis_Ratings_ServerServlet extends HttpServlet {
 	}
 
 	public enum AEAction {
-		SEARCH, DETAILS, FRIENDS
+		SEARCH, DETAILS, FRIENDS, LINK
 	}
 }
